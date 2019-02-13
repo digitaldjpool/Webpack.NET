@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
@@ -28,21 +29,27 @@ namespace Webpack.NET
 
             // Get asset URL
             var urlHelper = new UrlHelper(htmlHelper.ViewContext.RequestContext);
-            var assetUrl = urlHelper.WebpackAsset(assetName, assetType, required);
+            var assetUrls = urlHelper.WebpackAssets(assetName, assetType, required);
 
             // If not required, return nothing if not found
-            if (assetUrl == null) return null;
+            if (assetUrls == null || assetUrls.Count == 0) return null;
 
-            // Create tag builder
-            var builder = new TagBuilder("link");
+            StringBuilder html = new StringBuilder();
+            foreach (var assetUrl in assetUrls)
+            {
+                // Create tag builder
+                var builder = new TagBuilder("link");
 
-            // Add attributes
-            builder.MergeAttribute("rel", "stylesheet");
-            builder.MergeAttribute("href", assetUrl);
-            builder.MergeAttributes(new RouteValueDictionary(htmlAttributes));
+                // Add attributes
+                builder.MergeAttribute("rel", "stylesheet");
+                builder.MergeAttribute("href", assetUrl);
+                builder.MergeAttributes(new RouteValueDictionary(htmlAttributes));
+
+                html.Append(builder.ToString(TagRenderMode.SelfClosing));
+            }
 
             // Render tag
-            return htmlHelper.Raw(builder.ToString(TagRenderMode.SelfClosing));
+            return htmlHelper.Raw(html.ToString());
         }
 
         /// <summary>
@@ -63,20 +70,25 @@ namespace Webpack.NET
 
             // Get asset URL
             var urlHelper = new UrlHelper(htmlHelper.ViewContext.RequestContext);
-            var assetUrl = urlHelper.WebpackAsset(assetName, assetType, required);
+            var assetUrls = urlHelper.WebpackAssets(assetName, assetType, required);
 
             // If not required, return nothing if not found
-            if (assetUrl == null) return null;
+            if (assetUrls == null || assetUrls.Count == 0) return null;
 
-            // Create tag builder
-            var builder = new TagBuilder("script");
+            StringBuilder html = new StringBuilder();
+            foreach (var assetUrl in assetUrls)
+            {
+                // Create tag builder
+                var builder = new TagBuilder("script");
 
-            // Add attributes
-            builder.MergeAttribute("src", assetUrl);
-            builder.MergeAttributes(new RouteValueDictionary(htmlAttributes));
+                // Add attributes
+                builder.MergeAttribute("src", assetUrl);
+                builder.MergeAttributes(new RouteValueDictionary(htmlAttributes));
+                html.Append(builder.ToString());
+            }
 
             // Render tag
-            return htmlHelper.Raw(builder.ToString());
+            return htmlHelper.Raw(html.ToString());
         }
     }
 }

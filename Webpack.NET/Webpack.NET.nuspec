@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
-<package >
-	<metadata>
-		<id>$id$</id>
-		<version>$version$</version>
-		<title>$title$</title>
-		<authors>Steve Greatrex</authors>
-		<owners>stevegreatrex</owners>
-		<projectUrl>https://github.com/edge10/Webpack.NET</projectUrl>
-		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>$description$</description>
-		<copyright>$copyright$</copyright>
-		<tags>webpack aspnet mvc</tags>
-	</metadata>
+<package>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$-betadj-01</version>
+    <title>$title$</title>
+    <authors>Steve Greatrex</authors>
+    <owners>stevegreatrex</owners>
+    <projectUrl>https://github.com/edge10/Webpack.NET</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+    <tags>webpack aspnet mvc</tags>
+  </metadata>
 </package>
