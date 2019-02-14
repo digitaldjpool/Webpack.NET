@@ -1,4 +1,6 @@
-﻿namespace Webpack.NET
+﻿using System.Web;
+
+namespace Webpack.NET
 {
     /// <summary>
     /// Configuration properties for webpack integration.
@@ -14,5 +16,7 @@
         /// Gets or sets the server-relative path to the output of the webpack assets, eg. "~/scripts".
         /// </summary>
         public string AssetOutputPath { get; set; }
+
+        public bool DisableCaching { get; set; }
     }
 }

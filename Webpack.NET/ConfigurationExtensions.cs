@@ -1,9 +1,50 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Web;
 
 namespace Webpack.NET
 {
+    internal class WebpackBuilder
+    {
+        private readonly HttpServerUtilityBase httpServerUtility;
+
+        public WebpackBuilder(HttpServerUtilityBase httpServerUtility)
+        {
+            this.httpServerUtility = httpServerUtility;
+        }
+
+        public Webpack Build(params WebpackConfig[] configurations)
+        {
+            if (configurations == null) throw new ArgumentNullException(nameof(configurations));
+            if (httpServerUtility == null) throw new ArgumentNullException(nameof(httpServerUtility));
+
+            IEnumerable<WebpackAssetsDictionary> assets = configurations
+                                                             .Select(config => GetAssetDictionaryForConfig(config, httpServerUtility))
+                                                             .ToList();
+
+            return new Webpack(assets);
+        }
+
+        /// <summary>
+        /// Gets the webpack asset dictionary for the specified <paramref name="configuration"/>.
+        /// </summary>
+        /// <param name="configuration">The webpack configuration.</param>
+        /// <param name="httpServerUtility">The HTTP server utility.</param>
+        /// <returns>
+        /// The webpack asset dictionary.
+        /// </returns>
+        private static WebpackAssetsDictionary GetAssetDictionaryForConfig(WebpackConfig configuration, HttpServerUtilityBase httpServerUtility)
+        {
+            var assets = WebpackAssetsDictionary.FromFile(httpServerUtility.MapPath(configuration.AssetManifestPath));
+            assets.RootFolder = configuration.AssetOutputPath;
+
+            return assets;
+        }
+    }
+
+    /*
     /// <summary>
     /// Configuration extensions for setting up webpack.
     /// </summary>
@@ -25,8 +66,10 @@ namespace Webpack.NET
         {
             if (application == null) throw new ArgumentNullException(nameof(application));
 
-            new HttpApplicationStateWrapper(application.Application)
-                    .ConfigureWebpack(new Webpack(configurations, new HttpServerUtilityWrapper(application.Server)));
+            var webpack = WebpackBuilder.Build(configurations, new HttpServerUtilityWrapper(application.Server));
+
+            var httpApplicationStateWrapper = new HttpApplicationStateWrapper(application.Application);
+            httpApplicationStateWrapper.ConfigureWebpack(webpack);
         }
 
         /// <summary>
@@ -73,4 +116,5 @@ namespace Webpack.NET
             return webpack;
         }
     }
+    */
 }

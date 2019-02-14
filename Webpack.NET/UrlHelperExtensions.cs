@@ -25,7 +25,8 @@ namespace Webpack.NET
         {
             if (urlHelper == null) throw new ArgumentNullException(nameof(urlHelper));
 
-            var webpack = urlHelper.RequestContext.HttpContext.Application.GetWebpack();
+            var webpack = Webpack.Instance; // urlHelper.RequestContext.HttpContext.Application.GetWebpack();
+
             var assetUrl = webpack.GetAssetUrl(assetName, assetType, required);
 
             return (assetUrl != null) ? urlHelper.Content(assetUrl) : null;
@@ -66,7 +67,7 @@ namespace Webpack.NET
         {
             if (urlHelper == null) throw new ArgumentNullException(nameof(urlHelper));
 
-            var webpack = urlHelper.RequestContext.HttpContext.Application.GetWebpack();
+            var webpack = Webpack.Instance;// urlHelper.RequestContext.HttpContext.Application.GetWebpack();
             var assetUrl = webpack.GetAssetsUrl(assetName, assetType, required);
 
             List<string> list = new List<string>();

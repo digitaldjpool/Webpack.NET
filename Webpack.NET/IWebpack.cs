@@ -5,7 +5,7 @@ namespace Webpack.NET
     /// <summary>
     /// Represents a configured webpack instance.
     /// </summary>
-    internal interface IWebpack
+    public interface IWebpack
     {
         /// <summary>
         /// Gets the asset URL.

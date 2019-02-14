@@ -27,7 +27,8 @@ namespace Webpack.NET.Tests
             var urlHelper = SetupUrlHelper("http://server/");
             var webpack = new Mock<IWebpack>();
             webpack.Setup(w => w.GetAssetsUrl("non-existant", "non-existant", true)).Throws<AssetNotFoundException>();
-            urlHelper.RequestContext.HttpContext.Application.ConfigureWebpack(webpack.Object);
+            //urlHelper.RequestContext.HttpContext.Application.ConfigureWebpack(webpack.Object);
+            Webpack.Instance = webpack.Object;
 
             Assert.Throws<AssetNotFoundException>(() => urlHelper.WebpackAssets("non-existant", "non-existant"));
             Assert.Throws<AssetNotFoundException>(() => urlHelper.AbsoluteWebpackAssets("non-existant", "non-existant"));
@@ -42,7 +43,9 @@ namespace Webpack.NET.Tests
             webpack.Setup(w => w.GetAssetsUrl("asset-name", "ext", false)).Returns(new List<string>() { "/scripts/assets/asset.hash.js", "/scripts/assets/asset.hash2.js" });
             webpack.Setup(w => w.GetAssetsUrl("asset-name-querystring", "ext", true)).Returns(new List<string>() { "/scripts/assets/asset.hash.js?i=1%2b1", "/scripts/assets/asset.hash2.js?i=1%2b1" });
             webpack.Setup(w => w.GetAssetsUrl("asset-name-querystring", "ext", false)).Returns(new List<string>() { "/scripts/assets/asset.hash.js?i=1%2b1", "/scripts/assets/asset.hash2.js?i=1%2b1" });
-            urlHelper.RequestContext.HttpContext.Application.ConfigureWebpack(webpack.Object);
+
+            // Setup the static instance with the Mock
+            Webpack.Instance = webpack.Object;
 
             Assert.That(urlHelper.WebpackAssets("asset-name", "ext").FirstOrDefault(), Is.EqualTo("/scripts/assets/asset.hash.js"));
             Assert.That(urlHelper.WebpackAssets("asset-name", "ext").Skip(1).FirstOrDefault(), Is.EqualTo("/scripts/assets/asset.hash2.js"));
@@ -71,7 +74,9 @@ namespace Webpack.NET.Tests
             var urlHelper = SetupUrlHelper("http://server/");
             var webpack = new Mock<IWebpack>();
             webpack.Setup(w => w.GetAssetsUrl("non-existant", "non-existant", false)).Returns(new List<string>(0));
-            urlHelper.RequestContext.HttpContext.Application.ConfigureWebpack(webpack.Object);
+
+            // Setup the static instance with the Mock
+            Webpack.Instance = webpack.Object;
 
             Assert.That(urlHelper.WebpackAssets("non-existant", "non-existant", false), Is.Empty);
             Assert.That(urlHelper.AbsoluteWebpackAssets("non-existant", "non-existant", false), Is.Empty);

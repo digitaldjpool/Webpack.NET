@@ -9,45 +9,67 @@ namespace Webpack.NET
     /// Implementation of configured webpack instance.
     /// </summary>
     /// <seealso cref="Webpack.NET.IWebpack" />
-    internal class Webpack : IWebpack
+    public class Webpack : IWebpack
     {
-        /// <summary>
-        /// The cached assets.
-        /// </summary>
-        private readonly Lazy<IEnumerable<WebpackAssetsDictionary>> assets;
+        private static bool _isInitialized;
+        private static HttpServerUtilityBase _httpServerUtility;
+        private static WebpackConfig _config;
+        private static IWebpack s_instance;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Webpack" /> class.
-        /// </summary>
-        /// <param name="configurations">The webpack configurations.</param>
-        /// <param name="httpServerUtility">The HTTP server utility.</param>
-        /// <exception cref="System.ArgumentNullException">configs
-        /// or
-        /// server</exception>
-        public Webpack(IEnumerable<WebpackConfig> configurations, HttpServerUtilityBase httpServerUtility)
+        public static IWebpack Instance
         {
-            if (configurations == null) throw new ArgumentNullException(nameof(configurations));
-            if (httpServerUtility == null) throw new ArgumentNullException(nameof(httpServerUtility));
+            get
+            {
+                if (!_isInitialized)
+                {
+                    throw new ApplicationException("Webpack not initialized");
+                }
 
-            this.assets = new Lazy<IEnumerable<WebpackAssetsDictionary>>(() => configurations
-                .Select(config => GetAssetDictionaryForConfig(config, httpServerUtility))
-                .ToList());
+                if (_config.DisableCaching)
+                {
+                    Reload();
+                }
+
+                return s_instance;
+            }
+            internal set
+            {
+                _isInitialized = true;
+                s_instance = value;
+            }
         }
 
-        /// <summary>
-        /// Gets the webpack asset dictionary for the specified <paramref name="configuration"/>.
-        /// </summary>
-        /// <param name="configuration">The webpack configuration.</param>
-        /// <param name="httpServerUtility">The HTTP server utility.</param>
-        /// <returns>
-        /// The webpack asset dictionary.
-        /// </returns>
-        private static WebpackAssetsDictionary GetAssetDictionaryForConfig(WebpackConfig configuration, HttpServerUtilityBase httpServerUtility)
+        public static void Initialize(HttpServerUtilityBase httpServerUtility, WebpackConfig config)
         {
-            var assets = WebpackAssetsDictionary.FromFile(httpServerUtility.MapPath(configuration.AssetManifestPath));
-            assets.RootFolder = configuration.AssetOutputPath;
+            if (_isInitialized)
+            {
+                throw new ApplicationException("Already initialized");
+            }
 
-            return assets;
+            _httpServerUtility = httpServerUtility ?? throw new ArgumentNullException(nameof(httpServerUtility));
+            _config = config;
+            var _webpackBuilder = new WebpackBuilder(_httpServerUtility);
+            s_instance = _webpackBuilder.Build(_config);
+            _isInitialized = true;
+        }
+
+        public static void Reload()
+        {
+            if (!_isInitialized)
+            {
+                throw new ApplicationException("Not yet initialized. Can't reload.");
+            }
+
+            var _webpackBuilder = new WebpackBuilder(_httpServerUtility);
+            s_instance = _webpackBuilder.Build(_config);
+            _isInitialized = true;
+        }
+
+        private readonly IEnumerable<WebpackAssetsDictionary> assets;
+
+        internal Webpack(IEnumerable<WebpackAssetsDictionary> webpackAssetsDictionaries)
+        {
+            assets = webpackAssetsDictionaries ?? throw new ArgumentNullException(nameof(webpackAssetsDictionaries));
         }
 
         /// <summary>
@@ -84,7 +106,7 @@ namespace Webpack.NET
         /// </exception>
         public List<string> GetAssetsUrl(string assetName, string assetType, bool required = true)
         {
-            var matchingDictionary = this.assets.Value
+            var matchingDictionary = this.assets
                 .Where(a => a.ContainsKey(assetName))
                 .FirstOrDefault();
 
