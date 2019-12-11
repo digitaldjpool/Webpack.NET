@@ -112,6 +112,49 @@ namespace Webpack.NET.Tests
             Assert.That(webpack.GetAssetsUrl("main", "css")[1], Is.EqualTo("/dist/second-style.css"));
         }
 
+        [Test]
+        public void Assets_have_proper_url_when_using_AsemblyOutputPath()
+        {
+            var config1 = new WebpackConfig { AssetManifestPath = "~/scripts/manifest5.json", AssetOutputPath = "//somecdn.com/path/" };
+
+            SetupManifestFile(config1, @"{
+                                                            ""main"": {
+                                                                ""js"": [
+                                                                      ""/dist/first-script.js"",
+                                                                      ""/dist/second-script.js"",
+                                                                      ""/dist/third-script.js""
+                                                                      ],
+                                                                ""css"": [
+                                                                    ""/dist/first-style.css"",
+                                                                    ""/dist/second-style.css"",
+                                                                    ]
+                                                                }
+                                                            }");
+
+            WebpackAssetsDictionary webpackAssetDictionary = WebpackAssetsDictionary.FromConfig(config1);
+
+            var webpack = new Webpack(new[] { webpackAssetDictionary });
+
+            Assert.That(webpack.GetAssetsUrl("main", "js").Count, Is.EqualTo(3));
+            Assert.That(webpack.GetAssetsUrl("main", "js")[0], Is.EqualTo("//somecdn.com/path/dist/first-script.js"));
+            Assert.That(webpack.GetAssetsUrl("main", "js")[1], Is.EqualTo("//somecdn.com/path/dist/second-script.js"));
+            Assert.That(webpack.GetAssetsUrl("main", "js")[2], Is.EqualTo("//somecdn.com/path/dist/third-script.js"));
+
+            Assert.That(webpack.GetAssetsUrl("main", "css").Count, Is.EqualTo(2));
+            Assert.That(webpack.GetAssetsUrl("main", "css")[0], Is.EqualTo("//somecdn.com/path/dist/first-style.css"));
+            Assert.That(webpack.GetAssetsUrl("main", "css")[1], Is.EqualTo("//somecdn.com/path/dist/second-style.css"));
+
+            // Test variations of the AssetOutputPath
+            webpackAssetDictionary.RootFolder = "/root";
+            Assert.That(webpack.GetAssetsUrl("main", "js")[0], Is.EqualTo("/root/dist/first-script.js"));
+
+            webpackAssetDictionary.RootFolder = "/root//////"; // extra slashes
+            Assert.That(webpack.GetAssetsUrl("main", "js")[0], Is.EqualTo("/root/dist/first-script.js"));
+
+            webpackAssetDictionary.RootFolder = "\\root\\"; // back slash converted to forward slashes
+            Assert.That(webpack.GetAssetsUrl("main", "js")[0], Is.EqualTo("/root/dist/first-script.js"));
+        }
+
         private void SetupManifestFile(WebpackConfig config, string manifestContent)
         {
             var tempFile = Path.GetTempFileName();

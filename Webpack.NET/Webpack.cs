@@ -154,10 +154,22 @@ namespace Webpack.NET
                 else
                 {
                     // Combine root folder and asset URL
-                    finalList.Add($"{rootFolder}/{assetUrl}");
+                    finalList.Add(JoinUrlSegments(rootFolder, assetUrl));
                 }
             }
             return finalList;
+        }
+
+
+        /// <summary>
+        /// Joins the URL segments ensuring '/' characters are used properly.
+        /// </summary>
+        /// <param name="first">The first url segment.</param>
+        /// <param name="second">The second url segment.</param>
+        private string JoinUrlSegments(string first, string second)
+        {
+            var slash = new[] { '/' };
+            return $"{first.Replace('\\', '/').TrimEnd(slash)}/{second.Replace('\\', '/').TrimStart(slash).TrimEnd(slash)}";
         }
     }
 }
